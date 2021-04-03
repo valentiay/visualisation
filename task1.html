@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Tree Visualisation</title>
+    <style>
+        html {
+            font-family: sans-serif;
+        }
+    </style>
+</head>
+<body>
+<p>
+    <label>Дерево в формате GraphML <input type="file" id="file-selector"></label>
+</p>
+<p>
+    <label><input type="checkbox" id="show-labels-checkbox"> Отображать имена вершин</label>
+</p>
+<hr/>
+<section>
+    <a href="">Исходный код</a> на Scala скомпилирован в Javascript с помощью ScalaJS
+    <br/>
+    Александр Валентинов, М05-012е
+</section>
+<hr/>
+<section><canvas id="canvas" width="800" height="600"></canvas></section>
+<script type="text/javascript" src="target/scala-2.13/visualisation-fastopt/main.js"></script>
+</body>
+</html>
