@@ -25,6 +25,9 @@ object positioning {
                                 edges: Map[Node, List[Node]]
                               )
 
+  def median(vector: Seq[Int]): Int =
+    vector.sorted.drop(vector.length / 2).headOption.getOrElse(vector.head)
+
   def topologicalOrdering(graph: Graph): Map[String, Int] = {
     final case class OrderingState(
                                     ordering: Map[String, Int],
@@ -61,6 +64,59 @@ object positioning {
     }.ordering
   }
 
+  def countIntersections(layer: Int, outgoing: Map[Node, List[Node]], layers: Map[Int, Vector[Node]]): Int = {
+    val upperLayer = layers(layer + 1)
+    val currentLayer = layers(layer)
+    val lowerLayer = layers(layer - 1)
+
+    val upperEdges =
+      upperLayer
+        .flatMap(source => outgoing.getOrElse(source, Nil)
+          .map(target => source -> target))
+
+    val lowerEdges =
+      currentLayer
+        .flatMap(source => outgoing.getOrElse(source, Nil)
+          .map(target => source -> target))
+
+    val upperIntersections =
+      (for {
+        edge1@(source1, target1) <- upperEdges
+        edge2@(source2, target2) <- upperEdges
+        if edge1 != edge2 &&
+          (upperLayer.indexOf(source1) - upperLayer.indexOf(source2)) *
+            (currentLayer.indexOf(target1) - currentLayer.indexOf(target2)) < 0
+      } yield (edge1, edge2)).size
+
+    val lowerIntersections =
+      (for {
+        edge1@(source1, target1) <- lowerEdges
+        edge2@(source2, target2) <- lowerEdges
+        if edge1 != edge2 &&
+          (currentLayer.indexOf(source1) - currentLayer.indexOf(source2)) *
+            (lowerLayer.indexOf(target1) - lowerLayer.indexOf(target2)) < 0
+      } yield (edge1, edge2)).size
+
+    (upperIntersections + lowerIntersections) / 2
+  }
+
+  def locallyOptimize(layer: Int, outgoing: Map[Node, List[Node]], layers: Map[Int, Vector[Node]]): Map[Int, Vector[Node]] = {
+    val nodes = layers(layer)
+    (for {
+      node1 <- nodes
+      node2 <- nodes if node1 != node2
+    } yield (node1, node2)).foldLeft(layers) { case (layers, (edge1, edge2)) =>
+      val oldLayer = layers(layer)
+      val newLayers =
+        layers.updated(layer, oldLayer.updated(oldLayer.indexOf(edge1), edge2).updated(oldLayer.indexOf(edge2), edge1))
+      if (countIntersections(layer, outgoing, newLayers) < countIntersections(layer, outgoing, layers)) {
+        newLayers
+      } else {
+        layers
+      }
+    }
+  }
+
   def minimizeIntersections(graph: Graph, nodeLayers: Map[String, Int], layers: Map[Int, Vector[String]]): Positioning = {
     val edgesWithLayers =
       for {
@@ -77,7 +133,9 @@ object positioning {
         }
       } yield edge
 
-    val edges = edgesWithLayers.groupMap(_._2)(_._3)
+    val outgoing = edgesWithLayers.groupMap(_._2)(_._3)
+    val ingoing = edgesWithLayers.groupMap(_._3)(_._2)
+
     val sinkNodeLayers =
       (graph.nodes -- graph.outgoing.keySet)
         .groupMapReduce(nodeLayers)(node => Set(Node.Real(node)))(_ ++ _)
@@ -86,11 +144,42 @@ object positioning {
     val realLayers =
       sinkNodeLayers ++
         otherNodeLayers.transform((layer, nodes) => nodes ++ sinkNodeLayers.getOrElse(layer, Set.empty))
+    val heuristicLayers =
+      (1 to realLayers.keys.max).foldLeft[Map[Int, Vector[Node]]](Map(0 -> realLayers(0).toVector)) { (layers, layer) =>
+        val nodes =
+          realLayers(layer)
+            .toVector
+            .sortBy { source =>
+              outgoing
+                .get(source)
+                .fold(Int.MaxValue)(targets => median(targets.map(target => layers(layer - 1).indexOf(target))))
+            }
+        layers.updated(layer, nodes)
+      }
+
+    //    val optimizedLayers = (1 until layers.keys.max).foldLeft(heuristicLayers)((layers, idx) => locallyOptimize(idx, outgoing, layers))
+
+    val optimizedLayers =
+      LazyList
+        .iterate((heuristicLayers, heuristicLayers)) {
+          case (_, oldLayers) =>
+            val midLayres =
+              (1 until layers.keys.max)
+                .foldLeft(oldLayers)((layers, idx) => locallyOptimize(idx, outgoing, layers))
+            val newLayers =
+              (layers.keys.max - 1 to 1 by -1)
+                .foldLeft(midLayres)((layers, idx) => locallyOptimize(idx, outgoing, layers))
+            (oldLayers, newLayers)
+        }
+        .tail
+        .takeWhile { case (oldLayers, newLayers) => oldLayers != newLayers }
+        .lastOption
+        .fold(heuristicLayers)(_._2)
 
     val positions =
-      realLayers.flatMap { case (layer, nodes) => nodes.zipWithIndex.map { case (node, idx) => node -> (idx, layer) } }
+      optimizedLayers.flatMap { case (layer, nodes) => nodes.zipWithIndex.map { case (node, idx) => node -> (idx, layer) } }
 
-    Positioning(positions, edges)
+    Positioning(positions, outgoing)
   }
 
   def coffmanGrahamPositioning(graph: Graph, width: Int): Positioning = {

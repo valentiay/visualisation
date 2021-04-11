@@ -7,9 +7,6 @@
         html {
             font-family: sans-serif;
         }
-
-
-
     </style>
 </head>
 <body>
@@ -17,25 +14,29 @@
     <label>Граф в формате GraphML <input type="file" id="file-selector"></label>
 </p>
 <p>
-    <label>Максимальная ширина <input type="number" id="width-selector" min="1"></label>
+    <label>Максимальная ширина <input type="number" id="width-selector" min="1" value="3"></label>
 </p>
 <p>
-    <label><input type="checkbox" id="show-labels-checkbox"> Отображать имена вершин</label>
+    <label><input type="checkbox" id="show-labels-checkbox" checked> Отображать имена обычных вершин</label>
+    <label><input type="checkbox" id="show-dummy-labels-checkbox"> Отображать имена dummy-вершин</label>
 </p>
 <hr/>
 <section>
     <a
             href="https://github.com/valentiay/visualisation/blob/main/task2/src/main/scala/task2/positioning.scala"
             target="_blank"
-    >Исходный код</a> на Scala скомпилирован в Javascript с помощью ScalaJS
+    >Исходный код</a> на Scala скомпилирован в Javascript с помощью ScalaJS.
     <br/>
-    Ребра направлены снизу вверх
+    Ребра направлены снизу вверх.
     <br/>
-    Александр Валентинов, М05-012е
+    При отсутствии ограничения на ширину используется ширина 3.
+    Алгоритм минимизации dummy-вершин и комментарии будут добавлены в понедельник.
+    <br/>
+    Александр Валентинов, М05-012е.
 </section>
 <hr/>
 <section>
-    <canvas id="canvas" width="800" height="600"></canvas>
+    <canvas id="canvas" width="800" height="500"></canvas>
 </section>
 <script type="text/javascript" src="target/scala-2.13/task2-fastopt/main.js"></script>
 </body>

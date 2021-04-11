@@ -24,4 +24,5 @@ object main extends App {
   fileInput.addEventListener[UIEvent]("change", redrawGraph)
   widthInput.addEventListener[UIEvent]("change", redrawGraph)
   showLabelsCheckbox.addEventListener[UIEvent]("change", redrawGraph)
+  showDummyLabelsCheckbox.addEventListener[UIEvent]("change", redrawGraph)
 }

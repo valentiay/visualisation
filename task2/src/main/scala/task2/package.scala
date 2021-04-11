@@ -8,6 +8,8 @@ package object task2 {
     document.getElementById("width-selector").asInstanceOf[Input]
   val showLabelsCheckbox: Input =
     document.getElementById("show-labels-checkbox").asInstanceOf[Input]
+  val showDummyLabelsCheckbox: Input =
+    document.getElementById("show-dummy-labels-checkbox").asInstanceOf[Input]
 
   val canvas: Canvas =
     document.getElementById("canvas").asInstanceOf[Canvas]

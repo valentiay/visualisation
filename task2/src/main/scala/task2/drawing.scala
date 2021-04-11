@@ -21,16 +21,13 @@ object drawing {
       case (node, coordinates) =>
         ctx.beginPath()
         val (x, y) = transformCoordinates(coordinates)
-        if (showLabelsCheckbox.checked) {
-          ctx.fillText(node.id, x + radius + 1, y)
-        }
         node match {
           case Node.Real(id) =>
+            if (showLabelsCheckbox.checked) ctx.fillText(id, x + radius + 1, y)
             ctx.arc(x, y, radius, 0, 2 * Math.PI)
           case Node.Dummy(id) =>
-            ctx.fillStyle = "red"
+            if (showDummyLabelsCheckbox.checked) ctx.fillText(id, x + radius + 1, y)
             ctx.arc(x, y, radius / 2, 0, 2 * Math.PI)
-            ctx.fillStyle = "black"
         }
         ctx.fill()
     }
@@ -43,8 +40,9 @@ object drawing {
             val (endX, endY) = transformCoordinates(positioning.nodes(target))
             ctx.beginPath()
             ctx.moveTo(startX, startY)
-            val middleY = (endY + startY) / 2
-            ctx.bezierCurveTo(startX, middleY, endX, middleY, endX, endY)
+//            val middleY = (endY + startY) / 2
+//            ctx.bezierCurveTo(startX, middleY, endX, middleY, endX, endY)
+            ctx.lineTo(endX, endY)
             ctx.stroke()
         }
     }
