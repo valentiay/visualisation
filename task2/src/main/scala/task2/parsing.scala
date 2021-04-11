@@ -4,7 +4,7 @@ import org.scalajs.dom.DOMParser
 import task2.positioning.Graph
 
 object parsing {
-  def parseTreeFromGraphML(graphML: String): Graph = {
+  def parseGraphFromGraphML(graphML: String): Graph = {
     val parser = new DOMParser
     val xmlDoc = parser.parseFromString(graphML, "text/xml")
     val xmlGraph = xmlDoc
