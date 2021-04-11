@@ -8,6 +8,7 @@ import drawing.drawGraph
 object main extends App {
   def redrawGraph(e: UIEvent): Unit = {
     if (fileInput.files.length == 1) {
+      loadingMessage.textContent = "Loading..."
       val file = fileInput.files.item(0)
       val reader = new FileReader
       reader.readAsText(file)
@@ -15,8 +16,9 @@ object main extends App {
         val graphML = reader.result.asInstanceOf[String]
         val graph = parseGraphFromGraphML(graphML)
         val width = widthInput.value.toIntOption
-        val positioning = coffmanGrahamPositioning(graph, width.getOrElse(3))
+        val positioning = coffmanGrahamPositioning(graph, width.getOrElse(Int.MaxValue))
         drawGraph(positioning)
+        loadingMessage.textContent = ""
       }
     }
   }
