@@ -1,9 +1,15 @@
-name := "visualisation"
-version := "0.1"
-scalaVersion := "2.13.5"
+name         in ThisBuild := "visualisation"
+version      in ThisBuild := "0.1"
+scalaVersion in ThisBuild := "2.13.5"
 
-enablePlugins(ScalaJSPlugin)
+lazy val commonSettings =
+  List(
+    libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "1.1.0",
+    scalaJSUseMainModuleInitializer := true,
+  )
 
-scalaJSUseMainModuleInitializer := true
+lazy val task1 =
+  project.settings(commonSettings)
 
-libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "1.1.0"
+lazy val task2 =
+  project.settings(commonSettings)
